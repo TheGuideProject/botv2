@@ -1,18 +1,37 @@
 const axios = require('axios');
 
 exports.handler = async function(event, context) {
+  // Gestisci le richieste preflight OPTIONS per CORS
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS'
+      },
+      body: ''
+    };
+  }
+
   if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: 'Method Not Allowed' };
+    return { 
+      statusCode: 405, 
+      headers: {
+        'Access-Control-Allow-Origin': '*'
+      },
+      body: 'Method Not Allowed' 
+    };
   }
 
   try {
     const { analysisResults, userMessage } = JSON.parse(event.body);
     
     // Prepara il contesto per OpenAI basato sui risultati dell'analisi
-    let analysisContext = "L'utente ha caricato un'immagine analizzata per la corrosione. ";
+    let analysisContext = "Sei un esperto di corrosione e protezione dei materiali. L'utente ha caricato un'immagine analizzata per la corrosione. ";
     
-    if (analysisResults && analysisResults.data && analysisResults.data[0]) {
-      const result = analysisResults.data[0];
+    if (analysisResults && analysisResults.data) {
+      const result = Array.isArray(analysisResults.data) ? analysisResults.data[0] : analysisResults.data;
       
       if (result.confidences) {
         analysisContext += "I risultati dell'analisi mostrano: ";
@@ -30,7 +49,7 @@ exports.handler = async function(event, context) {
       messages: [
         {
           role: "system",
-          content: `Sei un esperto di corrosione e protezione dei materiali. ${analysisContext} Fornisci consigli utili e pratici.`
+          content: analysisContext + " Fornisci consigli utili e pratici in italiano."
         },
         {
           role: "user",
@@ -48,6 +67,9 @@ exports.handler = async function(event, context) {
 
     return {
       statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*'
+      },
       body: JSON.stringify({ 
         response: response.data.choices[0].message.content 
       })
@@ -56,6 +78,9 @@ exports.handler = async function(event, context) {
     console.error('Error calling OpenAI API:', error);
     return {
       statusCode: 500,
+      headers: {
+        'Access-Control-Allow-Origin': '*'
+      },
       body: JSON.stringify({ error: 'Failed to get response from AI' })
     };
   }
