@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analizzatore di Corrosione con Assistente AI</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #34495e;
+            --success-color: #2ecc71;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary-color), var(--dark-color));
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .upload-section, .result-section, .chat-section {
+            flex: 1;
+            min-width: 300px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 10px;
+        }
+        
+        .upload-area {
+            border: 2px dashed var(--secondary-color);
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .upload-area:hover {
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+        
+        .upload-area i {
+            font-size: 3rem;
+            color: var(--secondary-color);
+            margin-bottom: 15px;
+        }
+        
+        .upload-area p {
+            margin-bottom: 15px;
+        }
+        
+        .btn {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: var(--primary-color);
+        }
+        
+        .btn-analysis {
+            background-color: var(--accent-color);
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2rem;
+            margin-top: 20px;
+        }
+        
+        .btn-analysis:hover {
+            background-color: #c0392b;
+        }
+        
+        .image-preview {
+            width: 100%;
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .image-preview img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .result-content {
+            padding: 15px;
+        }
+        
+        .confidence-meter {
+            height: 20px;
+            background-color: #eee;
+            border-radius: 10px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        
+        .confidence-level {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-color), var(--success-color));
+            border-radius: 10px;
+            transition: width 0.5s ease-in-out;
+        }
+        
+        .chat-messages {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: #f9f9f9;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 80%;
+        }
+        
+        .user-message {
+            background-color: var(--secondary-color);
+            color: white;
+            margin-left: auto;
+        }
+        
+        .ai-message {
+            background-color: #e3e3e3;
+            color: #333;
+        }
+        
+        .chat-input {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .chat-input input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        
+        .chat-input button {
+            background-color: var(--success-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--secondary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #7f8c8d;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Analizzatore di Corrosione</h1>
+            <p class="subtitle">Carica un'immagine per analizzare la corrosione e chatta con il nostro assistente AI per consigli</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="upload-section">
+                <h2 class="section-title">Carica Immagine</h2>
+                <div class="upload-area" id="dropArea">
+                    <i>📁</i>
+                    <p>Trascina un'immagine qui o clicca per selezionare</p>
+                    <button class="btn" id="browseBtn">Sfoglia files</button>
+                    <input type="file" id="fileInput" accept="image/*" style="display: none;">
+                </div>
+                <div class="image-preview" id="imagePreview">
+                    <img src="" alt="Anteprima immagine" id="previewImg" style="display: none;">
+                </div>
+                <button class="btn btn-analysis" id="analyzeBtn" disabled>Analizza Immagine</button>
+                
+                <div class="loading" id="loadingAnalysis">
+                    <div class="loading-spinner"></div>
+                    <p>Analisi in corso...</p>
+                </div>
+            </div>
+            
+            <div class="result-section">
+                <h2 class="section-title">Risultati Analisi</h2>
+                <div class="result-content" id="resultContent">
+                    <p>I risultati dell'analisi appariranno qui.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-section">
+            <h2 class="section-title">Assistente per la Corrosione</h2>
+            <div class="chat-messages" id="chatMessages">
+                <div class="message ai-message">
+                    Ciao! Sono il tuo assistente per l'analisi della corrosione. Carica un'immagine per analizzarla e poi posso darti consigli su come procedere.
+                </div>
+            </div>
+            <div class="chat-input">
+                <input type="text" id="chatInput" placeholder="Scrivi la tua domanda qui..." disabled>
+                <button id="sendMessageBtn" disabled>Invia</button>
+            </div>
+            
+            <div class="loading" id="loadingChat">
+                <div class="loading-spinner"></div>
+                <p>Elaborazione...</p>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Powered by Hugging Face & OpenAI API</p>
+        </footer>
+    </div>
+
+    <script>
+        // Elementi DOM
+        const dropArea = document.getElementById('dropArea');
+        const browseBtn = document.getElementById('browseBtn');
+        const fileInput = document.getElementById('fileInput');
+        const previewImg = document.getElementById('previewImg');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const resultContent = document.getElementById('resultContent');
+        const loadingAnalysis = document.getElementById('loadingAnalysis');
+        const chatInput = document.getElementById('chatInput');
+        const sendMessageBtn = document.getElementById('sendMessageBtn');
+        const chatMessages = document.getElementById('chatMessages');
+        const loadingChat = document.getElementById('loadingChat');
+        
+        // Variabili globali
+        let currentImage = null;
+        let analysisResults = null;
+        
+        // Event Listeners
+        browseBtn.addEventListener('click', () => {
+            fileInput.click();
+        });
+        
+        fileInput.addEventListener('change', handleFileSelect);
+        
+        dropArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropArea.style.backgroundColor = 'rgba(52, 152, 219, 0.2)';
+        });
+        
+        dropArea.addEventListener('dragleave', () => {
+            dropArea.style.backgroundColor = '';
+        });
+        
+        dropArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropArea.style.backgroundColor = '';
+            
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                handleFileSelect(e);
+            }
+        });
+        
+        analyzeBtn.addEventListener('click', analyzeImage);
+        
+        sendMessageBtn.addEventListener('click', sendMessage);
+        
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        // Funzioni
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            
+            if (file && file.type.startsWith('image/')) {
+                currentImage = file;
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    previewImg.style.display = 'block';
+                    analyzeBtn.disabled = false;
+                    
+                    // Resetta i risultati precedenti
+                    resultContent.innerHTML = '<p>I risultati dell\'analisi appariranno qui.</p>';
+                    analysisResults = null;
+                    chatInput.disabled = true;
+                    sendMessageBtn.disabled = true;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        async function analyzeImage() {
+            if (!currentImage) return;
+            
+            loadingAnalysis.style.display = 'block';
+            analyzeBtn.disabled = true;
+            
+            try {
+                // Preparare i dati per l'invio a Hugging Face
+                const formData = new FormData();
+                formData.append('file', currentImage);
+                
+                // Invia l'immagine al modello Hugging Face
+                const response = await fetch('https://jacopo22295-resnet50-corrosion-classifier-v1.hf.space/run/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Errore nell\'analisi dell\'immagine');
+                }
+                
+                const data = await response.json();
+                analysisResults = data;
+                
+                // Mostra i risultati
+                displayResults(data);
+                
+                // Abilita la chat
+                chatInput.disabled = false;
+                sendMessageBtn.disabled = false;
+                
+            } catch (error) {
+                console.error('Errore:', error);
+                resultContent.innerHTML = `<p class="error">Si è verificato un errore durante l'analisi: ${error.message}</p>`;
+            } finally {
+                loadingAnalysis.style.display = 'none';
+                analyzeBtn.disabled = false;
+            }
+        }
+        
+        function displayResults(data) {
+            // Estrai i dati dalla risposta (questa parte potrebbe variare in base alla struttura della risposta)
+            let resultsHtml = '';
+            
+            if (data && data.data && data.data.length > 0) {
+                const result = data.data[0];
+                
+                if (result.confidences) {
+                    resultsHtml = '<h3>Risultati dell\'analisi:</h3>';
+                    
+                    result.confidences.forEach((item, index) => {
+                        const confidencePercent = (item.confidence * 100).toFixed(2);
+                        resultsHtml += `
+                            <div class="result-item">
+                                <p><strong>${item.label}</strong>: ${confidencePercent}%</p>
+                                <div class="confidence-meter">
+                                    <div class="confidence-level" style="width: ${confidencePercent}%"></div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else if (result.label) {
+                    resultsHtml = `
+                        <h3>Risultato dell'analisi:</h3>
+                        <p>Il modello ha classificato l'immagine come: <strong>${result.label}</strong></p>
+                    `;
+                } else {
+                    resultsHtml = `<p>${JSON.stringify(data)}</p>`;
+                }
+            } else {
+                resultsHtml = '<p>Nessun dato ricevuto dal modello di analisi.</p>';
+            }
+            
+            resultContent.innerHTML = resultsHtml;
+        }
+        
+        async function sendMessage() {
+            const message = chatInput.value.trim();
+            if (!message || !analysisResults) return;
+            
+            // Aggiungi il messaggio dell'utente alla chat
+            addMessageToChat(message, 'user');
+            chatInput.value = '';
+            loadingChat.style.display = 'block';
+            sendMessageBtn.disabled = true;
+            
+            try {
+                // Prepara il contesto per OpenAI basato sui risultati dell'analisi
+                let analysisContext = "L'utente ha caricato un'immagine analizzata per la corrosione. ";
+                
+                if (analysisResults && analysisResults.data && analysisResults.data[0]) {
+                    const result = analysisResults.data[0];
+                    
+                    if (result.confidences) {
+                        analysisContext += "I risultati dell'analisi mostrano: ";
+                        result.confidences.forEach(item => {
+                            analysisContext += `${item.label}: ${(item.confidence * 100).toFixed(2)}% di confidenza. `;
+                        });
+                    } else if (result.label) {
+                        analysisContext += `L'immagine è stata classificata come: ${result.label}.`;
+                    }
+                }
+                
+                // Invia la richiesta alla funzione serverless di Netlify
+                const aiResponse = await callOpenAI(analysisContext, message);
+                
+                // Aggiungi la risposta dell'AI alla chat
+                addMessageToChat(aiResponse, 'ai');
+                
+            } catch (error) {
+                console.error('Errore:', error);
+                addMessageToChat('Mi dispiace, si è verificato un errore. Riprova più tardi.', 'ai');
+            } finally {
+                loadingChat.style.display = 'none';
+                sendMessageBtn.disabled = false;
+            }
+        }
+        
+        // Funzione per chiamare l'API di OpenAI tramite la funzione serverless
+        async function callOpenAI(analysisContext, userMessage) {
+            try {
+                const response = await fetch('/.netlify/functions/openai-proxy', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        analysisResults: analysisResults,
+                        userMessage: userMessage
+                    }),
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Errore nella chiamata a OpenAI');
+                }
+                
+                const data = await response.json();
+                return data.response;
+            } catch (error) {
+                console.error('Errore:', error);
+                throw error;
+            }
+        }
+        
+        function addMessageToChat(message, sender) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message');
+            messageElement.classList.add(sender === 'user' ? 'user-message' : 'ai-message');
+            messageElement.textContent = message;
+            
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+    </script>
+</body>
+</html>
